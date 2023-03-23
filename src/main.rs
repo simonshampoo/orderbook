@@ -1,19 +1,13 @@
 use csv::ReaderBuilder;
 use std::error::Error;
 use std::fs::File;
+use orderbook::market_reader::MarketReader;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let file = File::open("../data.csv");
+    let mr = MarketReader::new("../data.csv".to_string());
 
-    let mut csv_reader = match file {
-        Ok(f) => ReaderBuilder::new().has_headers(true).from_reader(f),
-        Err(e) => panic!("Failed to open file: {}", e),
-    };
-
-    for result in csv_reader.records() {
-        let record = result?;
-
-        println!("{:?}", record);
-    }
+    mr.read_market_data(); 
+        
     Ok(())
 }
