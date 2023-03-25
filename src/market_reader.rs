@@ -17,10 +17,12 @@ impl MarketReader {
             Ok(f) => ReaderBuilder::new().has_headers(true).from_reader(f),
             Err(e) => panic!("Failed to open file: {}", e),
         };
+        
 
+        // the following will run in one thread
         for result in csv_reader.records() {
             let record = result?;
-
+            // the writing to a data structure will be in another thread
             println!("{:?}", record);
         }
         Ok(())
