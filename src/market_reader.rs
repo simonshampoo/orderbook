@@ -2,8 +2,6 @@ use csv::ReaderBuilder;
 use std::error::Error;
 use std::fs::File;
 
-
-
 pub struct MarketReader {
     path: String,
 }
