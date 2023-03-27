@@ -8,25 +8,24 @@ use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 
 #[derive(Debug, Deserialize, Serialize)]
-struct Order<'a> {
+pub struct Order {
     order_id: u8,
 
-    symbol: &'a str,
+    symbol: String,
     timestamp: u32,
     local_timestamp: u32,
-    side: &'a str,
+    side: String, 
     price: u8,
     amount: u16,
-
-    next_order: Option<Box<Order<'a>>>,
-    prev_order: Option<Box<Order<'a>>>,
+    next_order: Option<Box<Order>>,
+    prev_order: Option<Box<Order>>,
 
     #[serde(skip)]
-    exchange: &'a str,
+    exchange: String, 
     is_snapshot: bool,
 }
 
-impl<'a> PartialOrd for Order<'a> {
+impl PartialOrd for Order {
     fn partial_cmp(&self, other: &Order) -> Option<Ordering> {
         if self.price > other.price {
             Some(Ordering::Greater)
@@ -42,7 +41,7 @@ impl<'a> PartialOrd for Order<'a> {
     }
 }
 
-impl<'a> PartialEq for Order<'a> {
+impl PartialEq for Order {
     fn eq(&self, other: &Order) -> bool {
         self.price == other.price
     }
@@ -50,18 +49,18 @@ impl<'a> PartialEq for Order<'a> {
 
 // red black tree
 #[derive(Debug, Deserialize, Serialize)]
-struct Limit<'a, 'de: 'a> {
+pub struct Limit {
     limit_price: u8,
     limit_size: u8,
     total_vol: u8,
     // left_tick: Option<Box<Limit>>, // lower price limit
     // right_tick: Option<Box<Limit>>, // higher price limit
-    head: Option<Box<Order<'a>>>,
-    tail: Option<Box<Order<'a>>>,
+    head: Option<Box<Order>>,
+    tail: Option<Box<Order>>,
 }
 
 // hold up, this might change depending on the side
-impl<'a> PartialOrd for Limit<'a> {
+impl PartialOrd for Limit {
     fn partial_cmp(&self, other: &Limit) -> Option<Ordering> {
         if self.limit_price > other.limit_price {
             Some(Ordering::Greater)
@@ -73,13 +72,13 @@ impl<'a> PartialOrd for Limit<'a> {
     }
 }
 
-impl<'a> PartialEq for Limit<'a> {
+impl PartialEq for Limit {
     fn eq(&self, other: &Limit) -> bool {
         self.limit_price == other.limit_price
     }
 }
 
-impl<'a> Limit<'a> {
+impl Limit {
     pub fn new() -> Self {
         Self {
             limit_price: 0,
@@ -91,18 +90,18 @@ impl<'a> Limit<'a> {
     }
 }
 
-struct Orderbook<'a> {
-    buy_tree: RBTree<&'a Limit<'a>>,
-    sell_tree: RBTree<&'a Limit<'a>>,
-    lowest_sell: &'a Limit<'a>,
-    highest_buy: &'a Limit<'a>,
+pub struct Orderbook<'a> {
+    buy_tree: RBTree<&'a Limit>,
+    sell_tree: RBTree<&'a Limit>,
+    lowest_sell: &'a Limit,
+    highest_buy: &'a Limit,
 }
 
 impl<'a> Orderbook<'a> {
     pub fn new(lowest_sell: &'a Limit, highest_buy: &'a Limit) -> Self {
         Self {
-            buy_tree: RBTree::<&'a Limit>::new(),
-            sell_tree: RBTree::<&'a Limit>::new(),
+            buy_tree: RBTree::<& Limit>::new(),
+            sell_tree: RBTree::<& Limit>::new(),
             lowest_sell,
             highest_buy,
         }

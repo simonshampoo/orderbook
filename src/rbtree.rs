@@ -1,5 +1,4 @@
 
-
 enum Color {
     Red, 
     Black
