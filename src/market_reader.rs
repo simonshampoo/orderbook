@@ -2,11 +2,6 @@ use csv::ReaderBuilder;
 use std::error::Error;
 use std::fs::File;
 
-use std::sync::mpsc;
-use std::thread;
-
-use crate::orderbook::Order;
-use rb_tree::rbtree;
 
 
 pub struct MarketReader {

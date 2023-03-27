@@ -3,49 +3,11 @@
 // ["deribit", "BTC-PERP", "1585699217584000", "1585699217598331", "false", "bid", "6325", "550"]
 // https://docs.tardis.dev/downloadable-csv-files#incremental_book_l2
 //
-use rb_tree::RBTree;
+use std::collections::LinkedList;
+use rbtree::RBTree;
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
-
-#[derive(Debug, Deserialize, Serialize)]
-pub struct Order {
-    order_id: u8,
-
-    symbol: String,
-    timestamp: u32,
-    local_timestamp: u32,
-    side: String, 
-    price: u8,
-    amount: u16,
-    next_order: Option<Box<Order>>,
-    prev_order: Option<Box<Order>>,
-
-    #[serde(skip)]
-    exchange: String, 
-    is_snapshot: bool,
-}
-
-impl PartialOrd for Order {
-    fn partial_cmp(&self, other: &Order) -> Option<Ordering> {
-        if self.price > other.price {
-            Some(Ordering::Greater)
-        } else if self.price < other.price {
-            Some(Ordering::Less)
-        } else {
-            if self.timestamp > other.timestamp {
-                Some(Ordering::Greater)
-            } else {
-                Some(Ordering::Less)
-            }
-        }
-    }
-}
-
-impl PartialEq for Order {
-    fn eq(&self, other: &Order) -> bool {
-        self.price == other.price
-    }
-}
+use crate::order::Order;
 
 // red black tree
 #[derive(Debug, Deserialize, Serialize)]
@@ -78,6 +40,14 @@ impl PartialEq for Limit {
     }
 }
 
+impl Eq for Limit {}
+
+impl Ord for Limit {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.partial_cmp(other).unwrap()
+    }
+}
+
 impl Limit {
     pub fn new() -> Self {
         Self {
@@ -91,8 +61,8 @@ impl Limit {
 }
 
 pub struct Orderbook<'a> {
-    buy_tree: RBTree<&'a Limit>,
-    sell_tree: RBTree<&'a Limit>,
+    buy_tree: RBTree<&'a Limit, LinkedList<Order>>,
+    sell_tree: RBTree<&'a Limit, LinkedList<Order>>,
     lowest_sell: &'a Limit,
     highest_buy: &'a Limit,
 }
@@ -100,20 +70,20 @@ pub struct Orderbook<'a> {
 impl<'a> Orderbook<'a> {
     pub fn new(lowest_sell: &'a Limit, highest_buy: &'a Limit) -> Self {
         Self {
-            buy_tree: RBTree::<& Limit>::new(),
-            sell_tree: RBTree::<& Limit>::new(),
+            buy_tree: RBTree::<& Limit, LinkedList<Order>>::new(),
+            sell_tree: RBTree::<& Limit, LinkedList<Order>>::new(),
             lowest_sell,
             highest_buy,
         }
     }
 
     pub fn add_order_to_limit(order: Order) {
-        todo!("add order to limit");
+        todo!("add {:?} to limit", order);
     }
 
     // wont be used?
     pub fn cancel_order_at_limit(order: &Order) {
-        todo!("cancel order at limit");
+        todo!("cancel {:?} at limit", order);
     }
 
     // matching engine shit
